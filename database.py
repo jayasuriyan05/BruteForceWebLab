@@ -1,15 +1,28 @@
 import sqlite3
 from datetime import datetime
+import os
 
-DATABASE = "security_logs.db"
 
+# =========================
+# DATABASE LOCATION
+# =========================
+
+if os.environ.get("VERCEL"):
+    DATABASE = "/tmp/security_logs.db"
+else:
+    DATABASE = "security_logs.db"
+
+
+# =========================
+# INITIALIZE DATABASE
+# =========================
 
 def init_db():
 
     connection = sqlite3.connect(DATABASE)
+
     cursor = connection.cursor()
 
-    # Login event table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS login_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +33,6 @@ def init_db():
         )
     """)
 
-    # Security alert table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS security_alerts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,12 +45,18 @@ def init_db():
     """)
 
     connection.commit()
+
     connection.close()
 
+
+# =========================
+# LOGIN LOGGING
+# =========================
 
 def log_login(username, status, ip_address):
 
     connection = sqlite3.connect(DATABASE)
+
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -53,12 +71,18 @@ def log_login(username, status, ip_address):
     ))
 
     connection.commit()
+
     connection.close()
 
+
+# =========================
+# GET LOGIN LOGS
+# =========================
 
 def get_logs():
 
     connection = sqlite3.connect(DATABASE)
+
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -74,9 +98,19 @@ def get_logs():
     return logs
 
 
-def create_alert(alert_type, severity, description, ip_address):
+# =========================
+# CREATE SECURITY ALERT
+# =========================
+
+def create_alert(
+    alert_type,
+    severity,
+    description,
+    ip_address
+):
 
     connection = sqlite3.connect(DATABASE)
+
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -92,16 +126,28 @@ def create_alert(alert_type, severity, description, ip_address):
     ))
 
     connection.commit()
+
     connection.close()
 
+
+# =========================
+# GET SECURITY ALERTS
+# =========================
 
 def get_alerts():
 
     connection = sqlite3.connect(DATABASE)
+
     cursor = connection.cursor()
 
     cursor.execute("""
-        SELECT id, alert_type, severity, description, ip_address, timestamp
+        SELECT
+            id,
+            alert_type,
+            severity,
+            description,
+            ip_address,
+            timestamp
         FROM security_alerts
         ORDER BY id DESC
     """)
